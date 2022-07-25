@@ -1,12 +1,16 @@
 port module Main exposing (..)
 
 import Browser exposing (Document)
-import Html exposing (Html, div, h4, input, label, node, option, p, section, select, span, text, textarea)
-import Html.Attributes exposing (checked, class, disabled, min, placeholder, readonly, style, title, type_, value)
+import Html exposing (Html, a, code, div, footer, h4, input, label, li, nav, node, option, p, section, select, span, text, textarea, ul)
+import Html.Attributes exposing (checked, class, disabled, href, placeholder, readonly, style, target, title, type_, value)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Html.Lazy
 import Json.Encode as Encode
+import Model exposing (ColorScheme, Layout, Model, PreEditType(..), Style, decodeTextSize, initModel, preEditTypeToString, themeEncoder)
 import Parser exposing (..)
+import Render exposing (canvasView)
+
+
 
 -- MAIN
 
@@ -25,123 +29,9 @@ main =
 -- MODEL
 
 
-type alias Theme =
-    { style : Style
-    , color_scheme : ColorScheme
-    , layout : Layout
-    }
-
-
-type alias ColorScheme =
-    { id : String
-    , name : String
-    , author : String
-
-    -- 背景设定
-    , back_color : String
-    , border_color : String
-
-    -- 内选区域
-    , text_color : String
-    , hilited_text_color : String
-    , hilited_back_color : String
-
-    -- 激活候选项
-    , hilited_comment_text_color : String
-    , hilited_candidate_text_color : String
-    , hilited_candidate_back_color : String
-    , hilited_label_color : String
-
-    -- 其他候选项
-    , candidate_text_color : String
-    , comment_text_color : String
-    , label_color : String
-    }
-
-
-type alias Style =
-    { color_scheme : String
-    , font_face : String
-    , font_point : String
-    , horizontal : Bool
-    , fullscreen : Bool
-    , inline_preedit : Bool
-    , preedit_type : String
-    , display_tray_icon : Bool
-    , label_format : String
-    }
-
-
-type alias Layout =
-    { min_width : String
-    , min_height : String
-    , border_width : String
-    , margin_x : String
-    , margin_y : String
-    , spacing : String
-    , candidate_spacing : String
-    , hilite_spacing : String
-    , hilite_padding : String
-    , round_corner : String
-    }
-
-
-type alias Model =
-    { style : Style
-    , color_scheme : ColorScheme
-    , layout : Layout
-    , yaml : String
-    }
-
-
 init : () -> ( Model, Cmd msg )
 init _ =
-    let
-        model =
-            { style =
-                { color_scheme = "dracula"
-                , font_face = "Microsoft YaHei"
-                , font_point = "12"
-                , horizontal = False
-                , fullscreen = False
-                , inline_preedit = False
-                , preedit_type = "composition"
-                , display_tray_icon = False
-                , label_format = "%s."
-                }
-            , layout =
-                { min_width = "160"
-                , min_height = "0"
-                , border_width = "3"
-                , margin_x = "12"
-                , margin_y = "12"
-                , spacing = "10"
-                , candidate_spacing = "5"
-                , hilite_spacing = "4"
-                , hilite_padding = "2"
-                , round_corner = "4"
-                }
-            , color_scheme =
-                { id = "dracula"
-                , name = "Dracula"
-                , author = "owlzou"
-                , text_color = "#bd93f9"
-                , candidate_text_color = "#f8f8f2"
-                , comment_text_color = "#6272a4"
-                , label_color = "#ffb86c"
-                , back_color = "#282a36"
-                , border_color = "#282a36"
-                , hilited_text_color = "#f8f8f2"
-                , hilited_back_color = "#44475a"
-                , hilited_comment_text_color = "#8be9fd"
-                , hilited_label_color = "#f1fa8c"
-                , hilited_candidate_text_color = "#ff79c6"
-                , hilited_candidate_back_color = "#44475a"
-                }
-            , yaml = ""
-            }
-    in
-    ( model, setYAMLSource (themeEncoder { style = model.style, color_scheme = model.color_scheme, layout = model.layout }) )
+    ( initModel, setYAMLSource (themeEncoder { style = initModel.style, color_scheme = initModel.color_scheme, layout = initModel.layout }) )
 
 
 
@@ -150,6 +40,7 @@ init _ =
 
 type Msg
     = YAMLRecv String
+    | SizeRecv Encode.Value
     | UpdateStyle Style
     | UpdateLayout Layout
     | UpdateColorScheme ColorScheme
@@ -166,7 +57,10 @@ update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
         YAMLRecv yamlString ->
-            ( { model | yaml = yamlString }, setUI model.style.horizontal )
+            ( { model | yaml = yamlString }, Cmd.none )
+
+        SizeRecv value ->
+            ( { model | textSize = decodeTextSize value }, Cmd.none )
 
         UpdateStyle style ->
             updateYAML { model | style = style }
@@ -218,127 +112,7 @@ candidateSpace horizontal =
         "padding-left"
 
     else
-        "padding-bottom"
-
-
-previewCandidateFirst : Model -> String -> String -> String -> Html Msg
-previewCandidateFirst model label txt comment =
-    div
-        [ fallbackColor model.color_scheme.hilited_candidate_text_color model.color_scheme.candidate_text_color
-        ]
-        [ div
-            [ style "background" model.color_scheme.hilited_candidate_back_color
-            , style "border-radius" (model.layout.round_corner ++ "px")
-            , style "padding" (model.layout.hilite_padding ++ "px")
-            , class "candidate-bg"
-            ]
-            []
-        , span
-            [ style "color" model.color_scheme.hilited_label_color ]
-            [ text label ]
-        , span
-            [ style "margin-right" (model.layout.hilite_spacing ++ "px")
-            , style "margin-left" (model.layout.hilite_spacing ++ "px")
-            ]
-            [ text txt ]
-        , span [ fallbackColor model.color_scheme.hilited_comment_text_color model.color_scheme.comment_text_color ] [ text comment ]
-        ]
-
-
-previewCandidate : Model -> String -> String -> String -> Html Msg
-previewCandidate model label txt comment =
-    div
-        [ style "color" model.color_scheme.candidate_text_color
-        , style (candidateSpace model.style.horizontal) (model.layout.candidate_spacing ++ "px")
-        ]
-        [ span [ style "color" model.color_scheme.label_color ] [ text label ]
-        , span
-            [ style "margin-right" (model.layout.hilite_spacing ++ "px")
-            , style "margin-left" (model.layout.hilite_spacing ++ "px")
-            ]
-            [ text txt ]
-        , span [ style "color" model.color_scheme.comment_text_color ] [ text comment ]
-        ]
-
-
-previewCandidateLast : Model -> String -> String -> String -> Html Msg
-previewCandidateLast model label txt comment =
-    div
-        [ style "color" model.color_scheme.candidate_text_color, style (candidateSpace model.style.horizontal) (model.layout.candidate_spacing ++ "px") ]
-        [ span [ style "color" model.color_scheme.label_color ] [ text label ]
-        , span
-            [ style "margin-right" (model.layout.hilite_spacing ++ "px")
-            , style "margin-left" (model.layout.hilite_spacing ++ "px")
-            ]
-            [ text txt ]
-        , span [ style "color" model.color_scheme.comment_text_color ] [ text comment ]
-        ]
-
-
-previewText : Model -> Html Msg
-previewText model =
-    div [ style "padding" (model.layout.margin_y ++ "px " ++ model.layout.margin_x ++ "px") ]
-        [ -- 输入区域
-          div
-            [ style "margin-bottom" (model.layout.spacing ++ "px")
-            , style "display"
-                (if model.style.inline_preedit then
-                    "none"
-
-                 else
-                    "block"
-                )
-            ]
-            [ span
-                [ style "color" model.color_scheme.text_color
-                , style "display"
-                    (if model.style.preedit_type == "composition" then
-                        "inline"
-
-                     else
-                        "none"
-                    )
-                ]
-                [ text "小狼毫" ]
-            , span
-                [ style "color" model.color_scheme.hilited_text_color
-                , style "background-color" model.color_scheme.hilited_back_color
-                , style "border-radius" (model.layout.round_corner ++ "px")
-                , style "margin-right" (model.layout.hilite_spacing ++ "px")
-                , style "margin-left" (model.layout.hilite_spacing ++ "px")
-                , style "padding" (model.layout.hilite_padding ++ "px")
-                ]
-                [ text
-                    (if model.style.preedit_type == "composition" then
-                        "pei se"
-
-                     else
-                        "小狼毫配色"
-                    )
-                ]
-            , span
-                [ style "color" model.color_scheme.text_color ]
-                [ text "ˆ" ]
-            ]
-
-        -- 待选项
-        , div
-            [ style "display"
-                (if model.style.horizontal then
-                    "flex"
-
-                 else
-                    "block"
-                )
-            , class "candidate"
-            ]
-            [ previewCandidateFirst model "1." "配色" "(pei se)"
-            , previewCandidate model "2." "陪" "(pei)"
-            , previewCandidate model "3." "配" "(pei)"
-            , previewCandidate model "4." "赔" "(pei)"
-            , previewCandidateLast model "5." "培" "(pei)"
-            ]
-        ]
+        "padding-top"
 
 
 preview : Model -> Html Msg
@@ -357,46 +131,15 @@ preview model =
             , style "margin-bottom" "8px"
             ]
             [ span [ style "border-bottom" "1px dashed #000" ]
-                [ text
-                    (if model.style.preedit_type == "composition" then
-                        "小狼毫pei se"
+                [ case model.style.preedit_type of
+                    Composition ->
+                        text "小狼毫pei se"
 
-                     else
-                        "小狼毫配色"
-                    )
+                    Preview ->
+                        text "小狼毫配色"
                 ]
             ]
-        , div
-            [ class "rime"
-            , style "position" "relative"
-            , style "min-width" (model.layout.min_width ++ "px")
-            , style "min-height" (model.layout.min_height ++ "px")
-            ]
-            [ -- 背景
-              div
-                [ class "bg"
-                , style "background-color" model.color_scheme.back_color
-                ]
-                []
-
-            -- 模拟边框
-            , div
-                [ class "border"
-                , style "border-style" "solid"
-                , style "border-width" (model.layout.border_width ++ "px")
-                , style "border-color" model.color_scheme.border_color
-                ]
-                []
-
-            -- 预览界面
-            , div
-                [ class "text"
-                , style "width" "fit-content"
-                , style "font-family" ("\"" ++ model.style.font_face ++ "\"")
-                , style "font-size" (String.fromFloat (Maybe.withDefault 12.0 (String.toFloat model.style.font_point) / 12.0) ++ "rem")
-                ]
-                [ previewText model ]
-            ]
+        , canvasView model
         ]
 
 
@@ -408,21 +151,21 @@ colorSchemeInputView model =
         , textInput "名字" "name" Nothing model.name (\i -> UpdateColorScheme { model | name = i })
         , textInput "作者" "author" Nothing model.author (\i -> UpdateColorScheme { model | author = i })
         , divider "背景设定"
-        , colorInput "背景颜色" "back_color" model.back_color (\i -> UpdateColorScheme { model | back_color = i })
-        , colorInput "边框颜色" "border_color" model.border_color (\i -> UpdateColorScheme { model | border_color = i })
+        , colorInput "背景颜色" "back_color" Nothing model.back_color (\i -> UpdateColorScheme { model | back_color = i })
+        , colorInput "边框颜色" "border_color" (Just "无边框效果需边框和背景为同一颜色。") model.border_color (\i -> UpdateColorScheme { model | border_color = i })
         , divider "内选区域"
-        , colorInput "文字颜色" "text_color" model.text_color (\i -> UpdateColorScheme { model | text_color = i })
-        , colorInput "编码颜色" "hilited_text_color" model.hilited_text_color (\i -> UpdateColorScheme { model | hilited_text_color = i })
-        , colorInput "背景颜色" "hilited_back_color" model.hilited_back_color (\i -> UpdateColorScheme { model | hilited_back_color = i })
+        , colorInput "文字颜色" "text_color" Nothing model.text_color (\i -> UpdateColorScheme { model | text_color = i })
+        , colorInput "编码颜色" "hilited_text_color" Nothing model.hilited_text_color (\i -> UpdateColorScheme { model | hilited_text_color = i })
+        , colorInput "背景颜色" "hilited_back_color" Nothing model.hilited_back_color (\i -> UpdateColorScheme { model | hilited_back_color = i })
         , divider "激活候选项"
-        , colorInput "文字颜色" "hilited_candidate_text_color" model.hilited_candidate_text_color (\i -> UpdateColorScheme { model | hilited_candidate_text_color = i })
-        , colorInput "提示颜色" "hilited_comment_text_color" model.hilited_comment_text_color (\i -> UpdateColorScheme { model | hilited_comment_text_color = i })
-        , colorInput "标签颜色" "hilited_label_color" model.hilited_label_color (\i -> UpdateColorScheme { model | hilited_label_color = i })
-        , colorInput "背景颜色" "hilited_candidate_back_color" model.hilited_candidate_back_color (\i -> UpdateColorScheme { model | hilited_candidate_back_color = i })
+        , colorInput "文字颜色" "hilited_candidate_text_color" Nothing model.hilited_candidate_text_color (\i -> UpdateColorScheme { model | hilited_candidate_text_color = i })
+        , colorInput "提示颜色" "hilited_comment_text_color" Nothing model.hilited_comment_text_color (\i -> UpdateColorScheme { model | hilited_comment_text_color = i })
+        , colorInput "标签颜色" "hilited_label_color" Nothing model.hilited_label_color (\i -> UpdateColorScheme { model | hilited_label_color = i })
+        , colorInput "背景颜色" "hilited_candidate_back_color" Nothing model.hilited_candidate_back_color (\i -> UpdateColorScheme { model | hilited_candidate_back_color = i })
         , divider "其他候选项"
-        , colorInput "文字颜色" "candidate_text_color" model.candidate_text_color (\i -> UpdateColorScheme { model | candidate_text_color = i })
-        , colorInput "提示颜色" "comment_text_color" model.comment_text_color (\i -> UpdateColorScheme { model | comment_text_color = i })
-        , colorInput "标签颜色" "label_color" model.label_color (\i -> UpdateColorScheme { model | label_color = i })
+        , colorInput "文字颜色" "candidate_text_color" Nothing model.candidate_text_color (\i -> UpdateColorScheme { model | candidate_text_color = i })
+        , colorInput "提示颜色" "comment_text_color" Nothing model.comment_text_color (\i -> UpdateColorScheme { model | comment_text_color = i })
+        , colorInput "标签颜色" "label_color" Nothing model.label_color (\i -> UpdateColorScheme { model | label_color = i })
         ]
 
 
@@ -435,15 +178,15 @@ styleInputView style =
         , numberInput "字号" "font_point" (Just "大小完全不一样，预览仅供参考。") style.font_point (\i -> UpdateStyle { style | font_point = i })
         , boolInput "横排候选" "horizontal" Nothing style.horizontal (\i -> UpdateStyle { style | horizontal = i })
         , boolInput "全屏" "fullscreen" (Just "字面意义上的全屏，无法展示。") style.fullscreen (\i -> UpdateStyle { style | fullscreen = i })
-        , boolInput "内嵌编码" "inline_preedit" Nothing style.inline_preedit (\i -> UpdateStyle { style | inline_preedit = i })
+        , boolInput "嵌入式" "inline_preedit" Nothing style.inline_preedit (\i -> UpdateStyle { style | inline_preedit = i })
         , div [ class "field", class "is-horizontal" ]
             [ label [ class "label", class "field-label", title "preedit_type" ] [ text "预输入类型" ]
             , div [ class "field-body" ]
                 [ div [ class "control" ]
                     [ div [ class "select" ]
-                        [ select [ value style.preedit_type ]
-                            [ option [ value "composition", onClick (UpdateStyle { style | preedit_type = "composition" }) ] [ text "composition / 组合" ]
-                            , option [ value "preview", onClick (UpdateStyle { style | preedit_type = "preview" }) ] [ text "preview / 预览" ]
+                        [ select [ value (preEditTypeToString style.preedit_type) ]
+                            [ option [ value "composition", onClick (UpdateStyle { style | preedit_type = Composition }) ] [ text "composition / 组合" ]
+                            , option [ value "preview", onClick (UpdateStyle { style | preedit_type = Preview }) ] [ text "preview / 预览" ]
                             ]
                         ]
                     ]
@@ -487,12 +230,45 @@ yamlOutput model =
         ]
 
 
-hero : Html Msg
+hero : Html msg
 hero =
     section [ class "hero is-info" ]
-        [ div [ class "hero-body" ]
+        [ div [ class "hero-head" ]
+            [ nav [ class "navbar" ]
+                [ div [ class "container" ]
+                    [ div [ class "navbar-end" ]
+                        [ div [ class "buttons" ]
+                            [ a [ class "button is-info is-inverted", href "https://github.com/owlzou/weasel-theme-editor", target "_blank" ] [ text "Github" ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        , div [ class "hero-body" ]
             [ p [ class "title" ] [ text "小狼毫皮肤编辑器" ]
             , p [ class "subtitle" ] [ text "预览仅供参考 (～￣▽￣)～" ]
+            ]
+        ]
+
+
+docView : Html msg
+docView =
+    div [ class "content" ]
+        [ h4 [ class "title is-4" ] [ text "使用说明" ]
+        , ul []
+            [ li [] [ text "设定好主题后复制“输出”栏的 yaml 输出。" ]
+            , li [] [ text "点击托盘上，输入法图标旁的", code [] [ text "中" ], text "图标，选择", code [] [ text "用户文件夹" ] ]
+            , li [] [ text "找到", code [] [ text "weasel.custom.yaml" ], text "，用文本编辑器打开并将复制的内容整合进 yaml 内的", code [] [ text "patch" ], text "选项下（注意缩进，patch 出现一次即可）。" ]
+            , li [] [ text "设定细节详阅官方的 ", a [ href "https://github.com/rime/home/wiki/CustomizationGuide#%E5%AE%9A%E8%A3%BD%E6%8C%87%E5%8D%97", target "_blank" ] [ text "定制指南" ], text " 。" ]
+            ]
+        ]
+
+
+footerView : Html msg
+footerView =
+    footer [ class "footer" ]
+        [ div [ class "content has-text-centered" ]
+            [ p [] [ text "2022 ✨ OwlZou" ]
             ]
         ]
 
@@ -502,18 +278,22 @@ view model =
     { title = "小狼毫皮肤编辑器"
     , body =
         [ hero
-        , node "section"
+        , section
             [ class "section" ]
-            [ div [ class "tile is-ancestor", class "rime_options" ]
-                [ div [ class "tile is-parent is-vertical" ]
-                    [ div [ class "fakepreview" ] []
-                    , div [ class "tile is-child box preview", style "flex-grow" "0" ] [ preview model ]
-                    , div [ class "tile is-child box yaml" ] [ yamlOutput model ]
+            [ div [ class "tile is-ancestor is-vertical" ]
+                [ div [ class "tile", class "rime_options" ]
+                    [ div [ class "tile is-parent is-vertical" ]
+                        [ div [ class "preview-placeholder" ] []
+                        , div [ class "tile is-child box preview", style "flex-grow" "0" ] [ preview model ]
+                        , div [ class "tile is-child box yaml" ] [ yamlOutput model ]
+                        ]
+                    , div [ class "tile is-parent" ] [ div [ class "tile is-child box" ] [ Html.Lazy.lazy colorSchemeInputView model.color_scheme ] ]
+                    , div [ class "tile is-parent" ] [ div [ class "tile is-child box" ] [ Html.Lazy.lazy styleInputView model.style, Html.Lazy.lazy layoutInputView model.layout ] ]
                     ]
-                , div [ class "tile is-parent" ] [ div [ class "tile is-child box" ] [ Html.Lazy.lazy colorSchemeInputView model.color_scheme ] ]
-                , div [ class "tile is-parent" ] [ div [ class "tile is-child box" ] [ Html.Lazy.lazy styleInputView model.style, Html.Lazy.lazy layoutInputView model.layout ] ]
+                , div [ class "tile is-parent" ] [ div [ class "tile is-child box" ] [ docView ] ]
                 ]
             ]
+        , footerView
         ]
     }
 
@@ -524,7 +304,7 @@ view model =
 
 subscriptions : model -> Sub Msg
 subscriptions _ =
-    yamlReceiver YAMLRecv
+    Sub.batch [ yamlReceiver YAMLRecv, textSizeReceiver SizeRecv ]
 
 
 
@@ -537,11 +317,7 @@ port setYAMLSource : Encode.Value -> Cmd msg
 port yamlReceiver : (String -> msg) -> Sub msg
 
 
-
--- 更新UI
-
-
-port setUI : Bool -> Cmd msg
+port textSizeReceiver : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -579,13 +355,13 @@ textInputDisabled name tip val =
         ]
 
 
-colorInput : String -> String -> String -> (String -> Msg) -> Html Msg
-colorInput name tip val updateFunc =
+colorInput : String -> String -> Maybe String -> String -> (String -> Msg) -> Html Msg
+colorInput name tip help val updateFunc =
     div [ class "field", class "is-horizontal" ]
         [ label [ class "label", class "field-label", title tip ] [ text name ]
         , div [ class "field-body" ]
             [ div [ class "field", class "is-grouped" ]
-                [ div [ class "control" ] [ input [ class "input", value val, placeholder tip, onInput updateFunc ] [] ]
+                [ div [ class "control" ] [ input [ class "input", value val, placeholder tip, onInput updateFunc ] [], helpUI help ]
                 , div [ class "control" ] [ input [ type_ "color", value val, onInput updateFunc ] [] ]
                 ]
             ]
@@ -622,119 +398,3 @@ numberInput name tip help val updateFunc =
 divider : String -> Html msg
 divider txt =
     div [ class "divider is-left" ] [ text txt ]
-
-
-
--- COLOR HELPER
-
-
-type alias Color =
-    { red : String
-    , green : String
-    , blue : String
-    }
-
-
-hexToColor : Parser Color
-hexToColor =
-    let
-        get2Char : Parser String
-        get2Char =
-            getChompedString <|
-                chompIf Char.isHexDigit
-                    |. chompIf Char.isHexDigit
-    in
-    succeed Color
-        |. symbol "#"
-        |= get2Char
-        |= get2Char
-        |= get2Char
-        |. end
-
-
-colorToBGR : Color -> String
-colorToBGR color =
-    "0x" ++ color.blue ++ color.green ++ color.red
-
-
-
--- ENCODER
-
-
-themeEncoder : Theme -> Encode.Value
-themeEncoder model =
-    Encode.object
-        [ ( "style", styleEncoder model.style )
-        , ( "preset_color_schemes/" ++ model.color_scheme.id, colorSchemeEncoder model.color_scheme )
-        , ( "layout", layoutEncoder model.layout )
-        ]
-
-
-styleEncoder : Style -> Encode.Value
-styleEncoder style =
-    Encode.object
-        [ ( "color_scheme", Encode.string style.color_scheme )
-        , ( "font_face", Encode.string style.font_face )
-        , ( "font_point", str2IntEncoder style.font_point )
-        , ( "horizontal", Encode.bool style.horizontal )
-        , ( "fullscreen", Encode.bool style.fullscreen )
-        , ( "inline_preedit", Encode.bool style.inline_preedit )
-        , ( "preedit_type", Encode.string style.preedit_type )
-        , ( "display_tray_icon", Encode.bool style.display_tray_icon )
-        , ( "label_format", Encode.string style.label_format )
-        ]
-
-
-layoutEncoder : Layout -> Encode.Value
-layoutEncoder layout =
-    Encode.object
-        [ ( "min_width", str2IntEncoder layout.min_width )
-        , ( "min_height", str2IntEncoder layout.min_height )
-        , ( "border_width", str2IntEncoder layout.border_width )
-        , ( "margin_x", str2IntEncoder layout.margin_x )
-        , ( "margin_y", str2IntEncoder layout.margin_y )
-        , ( "spacing", str2IntEncoder layout.spacing )
-        , ( "candidate_spacing", str2IntEncoder layout.candidate_spacing )
-        , ( "hilite_spacing", str2IntEncoder layout.hilite_spacing )
-        , ( "hilite_padding", str2IntEncoder layout.hilite_padding )
-        , ( "round_corner", str2IntEncoder layout.round_corner )
-        ]
-
-
-colorSchemeEncoder : ColorScheme -> Encode.Value
-colorSchemeEncoder color =
-    Encode.object
-        [ ( "name", Encode.string color.name )
-        , ( "author", Encode.string color.author )
-        , ( "back_color", bgrEncoder color.back_color )
-        , ( "border_color", bgrEncoder color.border_color )
-        , ( "text_color", bgrEncoder color.text_color )
-        , ( "hilited_text_color", bgrEncoder color.hilited_text_color )
-        , ( "hilited_back_color", bgrEncoder color.hilited_back_color )
-        , ( "hilited_comment_text_color", bgrEncoder color.hilited_comment_text_color )
-        , ( "hilited_candidate_text_color", bgrEncoder color.hilited_candidate_text_color )
-        , ( "hilited_candidate_back_color", bgrEncoder color.hilited_candidate_back_color )
-        , ( "hilited_label_color", bgrEncoder color.hilited_label_color )
-        , ( "candidate_text_color", bgrEncoder color.candidate_text_color )
-        , ( "comment_text_color", bgrEncoder color.comment_text_color )
-        , ( "label_color", bgrEncoder color.label_color )
-        ]
-
-
-
--- ENCODE HELPER
-
-
-str2IntEncoder : String -> Encode.Value
-str2IntEncoder str =
-    Encode.int (Maybe.withDefault 0 (String.toInt str))
-
-
-bgrEncoder : String -> Encode.Value
-bgrEncoder str =
-    case run hexToColor str of
-        Ok val ->
-            Encode.string (colorToBGR val)
-
-        Err _ ->
-            Encode.string ""

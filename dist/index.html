@@ -34,12 +34,10 @@
       }
       .preview .candidate {
         align-items: center;
-        box-sizing: content-box;
+        position: relative;
       }
       .preview .candidate > div {
-        display: flex;
-        flex-shrink: 0;
-        box-sizing: content-box;
+        white-space: nowrap;
       }
       /* 拉长输出框 */
       .yaml .field {
@@ -53,6 +51,12 @@
       .yaml textarea {
         height: 100%;
         max-height: 100% !important;
+      }
+      /* 排版用 */
+      .absolute {
+        position: absolute;
+        top: 0;
+        left: 0;
       }
     </style>
   </head>
@@ -74,23 +78,25 @@
       }
     }
 
-    function updatePreview(horizontal) {
-      const wrapper = document.querySelector(".preview .rime");
-      const bg = document.querySelector(".preview .bg");
-      const border = document.querySelector(".preview .border");
-      const text = document.querySelector(".preview .text > div");
+    function getFontSize(fontSize, fontFamily, labelFormat) {
+      /* 获取当前上下文下字体实际所占空间 */
+      const canvas = document.getElementsByTagName("canvas")[0];
+      const ctx = canvas.getContext("2d");
+      ctx.font = `${fontSize * 1.5}px ${fontFamily}`;
 
-      bg.style.width = text.clientWidth + "px";
-      bg.style.height = text.clientHeight + "px";
+      const height_m = ctx.measureText("配色pei se");
 
-      border.style.width = text.clientWidth + "px";
-      border.style.height = text.clientHeight + "px";
-
-      wrapper.style.height = text.clientHeight + "px";
+      return {
+        width: ctx.measureText("小").width,
+        height:height_m.actualBoundingBoxAscent + height_m.actualBoundingBoxDescent,
+        fullCommentWidth: ctx.measureText("pei se").width,
+        commentWidth: ctx.measureText("pei").width,
+        labelWidth: ctx.measureText(labelFormat.replaceAll("%s", 1)).width,
+      };
     }
 
     function pin() {
-      const fake = document.querySelector(".fakepreview");
+      const fake = document.querySelector(".preview-placeholder");
       const ele = document.querySelector(".preview");
       const init_top = ele.offsetTop;
 
@@ -104,7 +110,7 @@
           ele.style.position = "fixed";
         } else {
           fake.style = null;
-          fake.className = "fakepreview";
+          fake.className = "preview-placeholder";
 
           ele.style.position = "relative";
           ele.style.width = null;
@@ -119,16 +125,20 @@
     });
 
     app.ports.setYAMLSource.subscribe((val) => {
+      app.ports.textSizeReceiver.send(
+        getFontSize(
+          val.style.font_point,
+          val.style.font_face,
+          val.style.label_format
+        )
+      );
+
       // 去除没有值的
       remove_null(val);
       val.style.layout = val.layout;
       delete val.layout;
       const patch = { patch: val };
       app.ports.yamlReceiver.send(jsYaml.dump(patch));
-    });
-
-    app.ports.setUI.subscribe((horizontal) => {
-      updatePreview(horizontal);
     });
 
     pin();
