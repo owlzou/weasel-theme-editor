@@ -4,10 +4,21 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build:elm",
+      "label": "elm:build",
       "type": "shell",
       "command": "elm make src/Main.elm --output dist/elm.js",
       "problemMatcher": []
+    },
+    {
+      "label": "elm:produce",
+      "type": "shell",
+      "command": "./build.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "publish",
+      "type": "shell",
+      "command": "npx gh-pages -d dist -b gh-pages"
     }
   ]
 }

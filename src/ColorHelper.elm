@@ -1,4 +1,4 @@
-module ColorHelper exposing (hex2BGR, hex2ColorFallback, hex2ColorWithDefault,blendColor)
+module ColorHelper exposing (blendColor, hex2BGR, hex2ColorFallback, hex2ColorWithDefault)
 
 import Color
 import Parser exposing (..)
@@ -46,18 +46,6 @@ intFromHexString hex =
         |> List.sum
 
 
-{- intToHexString : Int -> String
-intToHexString num =
-    let
-        a =
-            num // 16
-
-        b =
-            modBy 16 num
-    in
-    [ Char.fromCode a, Char.fromCode b ] |> String.fromList -}
-
-
 hex2BGR : String -> String
 hex2BGR hex =
     case run hexToColorStr hex of
@@ -92,10 +80,14 @@ hex2ColorFallback default hex2 hex1 =
                 Err _ ->
                     default
 
-blendColor:Color.Color -> Color.Color -> Color.Color 
+
+blendColor : Color.Color -> Color.Color -> Color.Color
 blendColor colorA colorB =
-    let 
-        a = Color.toRgba colorA 
-        b = Color.toRgba colorB 
-    in 
-        Color.rgb ((a.red*2+b.red)/3) ((a.green*2+b.green)/3) ((a.blue*2+b.blue)/3)
+    let
+        a =
+            Color.toRgba colorA
+
+        b =
+            Color.toRgba colorB
+    in
+    Color.rgb ((a.red * 2 + b.red) / 3) ((a.green * 2 + b.green) / 3) ((a.blue * 2 + b.blue) / 3)

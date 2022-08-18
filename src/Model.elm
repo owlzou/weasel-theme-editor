@@ -103,7 +103,7 @@ type alias Model =
 initModel : Model
 initModel =
     { style =
-        { color_scheme = "violet_white"
+        { color_scheme = "succulent_plant"
         , font_face = "Microsoft YaHei"
         , font_point = "12"
         , horizontal = True
@@ -126,21 +126,21 @@ initModel =
         , round_corner = "0"
         }
     , color_scheme =
-        { id = "violet_white"
-        , name = "紫白风格"
+        { id = "succulent_plant"
+        , name = "多肉植物"
         , author = "owlzou"
-        , text_color = "#544C4E"
-        , candidate_text_color = "#926d8c"
-        , comment_text_color = ""
+        , text_color = "#7e643c"
+        , candidate_text_color = "#7e643c"
+        , comment_text_color = "#547979"
         , label_color = ""
-        , back_color = "#F7F8F9"
-        , border_color = "#F7F8F9"
-        , hilited_text_color = "#544E4C"
-        , hilited_back_color = "#DCE5ED"
-        , hilited_comment_text_color = "#9b6492"
+        , back_color = "#e6e7e9"
+        , border_color = "#e6e7e9"
+        , hilited_text_color = "#7e643c"
+        , hilited_back_color = "#547979"
+        , hilited_comment_text_color = "#a6ca82"
         , hilited_label_color = ""
-        , hilited_candidate_text_color = "#544E4C"
-        , hilited_candidate_back_color = "#dce5ed"
+        , hilited_candidate_text_color = "#e6e7e9"
+        , hilited_candidate_back_color = "#547979"
         }
     , yaml = ""
     , textSize =
@@ -238,7 +238,7 @@ bgrEncoder str =
 textSizeDecoder : Decode.Decoder TextSize
 textSizeDecoder =
     Decode.map5 TextSize
-        (Decode.field "width" Decode.float)       
+        (Decode.field "width" Decode.float)
         (Decode.field "height" Decode.float)
         (Decode.field "fullCommentWidth" Decode.float)
         (Decode.field "commentWidth" Decode.float)

@@ -1,7 +1,7 @@
 port module Main exposing (..)
 
 import Browser exposing (Document)
-import Html exposing (Html, a, code, div, footer, h4, input, label, li, nav, node, option, p, section, select, span, text, textarea, ul)
+import Html exposing (Html, a, code, div, footer, h4, input, label, li, nav, option, p, section, select, span, text, textarea, ul)
 import Html.Attributes exposing (checked, class, disabled, href, placeholder, readonly, style, target, title, type_, value)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Html.Lazy
@@ -93,26 +93,6 @@ update msg model =
 
 
 -- VIEW
-
-
-fallbackColor : String -> String -> Html.Attribute msg
-fallbackColor color fbk =
-    style "color"
-        (if String.isEmpty color then
-            fbk
-
-         else
-            color
-        )
-
-
-candidateSpace : Bool -> String
-candidateSpace horizontal =
-    if horizontal then
-        "padding-left"
-
-    else
-        "padding-top"
 
 
 preview : Model -> Html Msg
@@ -233,18 +213,7 @@ yamlOutput model =
 hero : Html msg
 hero =
     section [ class "hero is-info" ]
-        [ div [ class "hero-head" ]
-            [ nav [ class "navbar" ]
-                [ div [ class "container" ]
-                    [ div [ class "navbar-end" ]
-                        [ div [ class "buttons" ]
-                            [ a [ class "button is-info is-inverted", href "https://github.com/owlzou/weasel-theme-editor", target "_blank" ] [ text "Github" ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        , div [ class "hero-body" ]
+        [ div [ class "hero-body" ]
             [ p [ class "title" ] [ text "小狼毫皮肤编辑器" ]
             , p [ class "subtitle" ] [ text "预览仅供参考 (～￣▽￣)～" ]
             ]
@@ -259,6 +228,7 @@ docView =
             [ li [] [ text "设定好主题后复制“输出”栏的 yaml 输出。" ]
             , li [] [ text "点击托盘上，输入法图标旁的", code [] [ text "中" ], text "图标，选择", code [] [ text "用户文件夹" ] ]
             , li [] [ text "找到", code [] [ text "weasel.custom.yaml" ], text "，用文本编辑器打开并将复制的内容整合进 yaml 内的", code [] [ text "patch" ], text "选项下（注意缩进，patch 出现一次即可）。" ]
+            , li [] [ text "重新部署。" ]
             , li [] [ text "设定细节详阅官方的 ", a [ href "https://github.com/rime/home/wiki/CustomizationGuide#%E5%AE%9A%E8%A3%BD%E6%8C%87%E5%8D%97", target "_blank" ] [ text "定制指南" ], text " 。" ]
             ]
         ]
@@ -268,7 +238,7 @@ footerView : Html msg
 footerView =
     footer [ class "footer" ]
         [ div [ class "content has-text-centered" ]
-            [ p [] [ text "2022 ✨ OwlZou" ]
+            [ p [] [ text "2022 ✨ OwlZou | ", a [ href "https://github.com/owlzou/weasel-theme-editor", target "_blank" ] [ text "Github" ] ]
             ]
         ]
 
