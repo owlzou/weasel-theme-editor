@@ -18,7 +18,7 @@
     {
       "label": "publish",
       "type": "shell",
-      "command": "npx gh-pages -d dist -b gh-pages"
+      "command": "npx gh-pages@3.0.0 -d dist -b gh-pages -r https://github.com/owlzou/weasel-theme-editor.git"
     }
   ]
 }
