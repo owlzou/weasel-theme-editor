@@ -7,11 +7,11 @@
     <title>小狼毫皮肤编辑器</title>
     <link
       rel="stylesheet"
-      href="https://fastly.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+      href="https://unpkg.com/bulma@0.9.4/css/bulma.min.css"
     />
     <link
       rel="stylesheet"
-      href="https://fastly.jsdelivr.net/npm/@creativebulma/bulma-divider@1.1.0/dist/bulma-divider.min.css"
+      href="https://unpkg.com/@creativebulma/bulma-divider@1.1.0/dist/bulma-divider.min.css"
     />
     <style>
       /* 标签占位宽 */
@@ -61,86 +61,86 @@
     </style>
   </head>
   <body>
-    <div id="app"></div>
-  </body>
-  <script src="https://unpkg.com/elm-canvas/elm-canvas.js"></script>
-  <script src="./elm.js"></script>
-  <script type="module">
-    import jsYaml from "https://cdn.skypack.dev/js-yaml";
+    <div id="app">Loading……</div>
+    <script src="https://unpkg.com/elm-canvas/elm-canvas.js"></script>
+    <script src="./elm.js"></script>
+    <script type="module">
+      import jsYaml from "https://cdn.skypack.dev/js-yaml";
 
-    function remove_null(obj) {
-      for (const key in obj) {
-        if (obj[key] === "") {
-          delete obj[key];
-        } else if (typeof obj[key] === "object") {
-          remove_null(obj[key]);
+      function remove_null(obj) {
+        for (const key in obj) {
+          if (obj[key] === "") {
+            delete obj[key];
+          } else if (typeof obj[key] === "object") {
+            remove_null(obj[key]);
+          }
         }
       }
-    }
 
-    function getFontSize(fontSize, fontFamily, labelFormat) {
-      /* 获取当前上下文下字体实际所占空间 */
-      const canvas = document.getElementsByTagName("canvas")[0];
-      const ctx = canvas.getContext("2d");
-      ctx.font = `${fontSize * 1.5}px ${fontFamily}`;
+      function getFontSize(fontSize, fontFamily, labelFormat) {
+        /* 获取当前上下文下字体实际所占空间 */
+        const canvas = document.getElementsByTagName("canvas")[0];
+        const ctx = canvas.getContext("2d");
+        ctx.font = `${fontSize * 1.5}px ${fontFamily}`;
 
-      const height_m = ctx.measureText("配色pei se");
+        const height_m = ctx.measureText("配色pei se");
 
-      return {
-        width: ctx.measureText("小").width,
-        height:height_m.actualBoundingBoxAscent + height_m.actualBoundingBoxDescent,
-        fullCommentWidth: ctx.measureText("pei se").width,
-        commentWidth: ctx.measureText("pei").width,
-        labelWidth: ctx.measureText(labelFormat.replaceAll("%s", 1)).width,
-      };
-    }
+        return {
+          width: ctx.measureText("小").width,
+          height:height_m.actualBoundingBoxAscent + height_m.actualBoundingBoxDescent,
+          fullCommentWidth: ctx.measureText("pei se").width,
+          commentWidth: ctx.measureText("pei").width,
+          labelWidth: ctx.measureText(labelFormat.replaceAll("%s", 1)).width,
+        };
+      }
 
-    function pin() {
-      const fake = document.querySelector(".preview-placeholder");
-      const ele = document.querySelector(".preview");
-      const init_top = ele.offsetTop;
+      function pin() {
+        const fake = document.querySelector(".preview-placeholder");
+        const ele = document.querySelector(".preview");
+        const init_top = ele.offsetTop;
 
-      window.addEventListener("scroll", function () {
-        if (window.pageYOffset > init_top) {
-          fake.style.height = ele.clientHeight + "px";
-          fake.style.width = ele.clientWidth + "px";
-          fake.style.margin = getComputedStyle(ele).margin;
+        window.addEventListener("scroll", function () {
+          if (window.pageYOffset > init_top) {
+            fake.style.height = ele.clientHeight + "px";
+            fake.style.width = ele.clientWidth + "px";
+            fake.style.margin = getComputedStyle(ele).margin;
 
-          ele.style.width = ele.clientWidth + "px";
-          ele.style.position = "fixed";
-        } else {
-          fake.style = null;
-          fake.className = "preview-placeholder";
+            ele.style.width = ele.clientWidth + "px";
+            ele.style.position = "fixed";
+          } else {
+            fake.style = null;
+            fake.className = "preview-placeholder";
 
-          ele.style.position = "relative";
-          ele.style.width = null;
-        }
+            ele.style.position = "relative";
+            ele.style.width = null;
+          }
+        });
+      }
+
+      /*-------------------------------- START --------------------------------*/
+
+      var app = Elm.Main.init({
+        node: document.getElementById("app"),
       });
-    }
 
-    /*-------------------------------- START --------------------------------*/
+      app.ports.setYAMLSource.subscribe((val) => {
+        app.ports.textSizeReceiver.send(
+          getFontSize(
+            val.style.font_point,
+            val.style.font_face,
+            val.style.label_format
+          )
+        );
 
-    var app = Elm.Main.init({
-      node: document.getElementById("app"),
-    });
+        // 去除没有值的
+        remove_null(val);
+        val.style.layout = val.layout;
+        delete val.layout;
+        const patch = { patch: val };
+        app.ports.yamlReceiver.send(jsYaml.dump(patch));
+      });
 
-    app.ports.setYAMLSource.subscribe((val) => {
-      app.ports.textSizeReceiver.send(
-        getFontSize(
-          val.style.font_point,
-          val.style.font_face,
-          val.style.label_format
-        )
-      );
-
-      // 去除没有值的
-      remove_null(val);
-      val.style.layout = val.layout;
-      delete val.layout;
-      const patch = { patch: val };
-      app.ports.yamlReceiver.send(jsYaml.dump(patch));
-    });
-
-    pin();
-  </script>
+      pin();
+    </script>
+  </body>
 </html>
