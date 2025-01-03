@@ -1,7 +1,7 @@
 port module Main exposing (..)
 
 import Browser exposing (Document)
-import Html exposing (Html, a, code, div, footer, h4, input, label, li, nav, option, p, section, select, span, text, textarea, ul)
+import Html exposing (Html, a, code, div, footer, h4, input, label, li, option, p, section, select, span, text, textarea, ul)
 import Html.Attributes exposing (checked, class, disabled, href, placeholder, readonly, style, target, title, type_, value)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Html.Lazy
@@ -165,8 +165,8 @@ styleInputView style =
                 [ div [ class "control" ]
                     [ div [ class "select" ]
                         [ select [ value (preEditTypeToString style.preedit_type) ]
-                            [ option [ value "composition", onClick (UpdateStyle { style | preedit_type = Composition }) ] [ text "composition / 组合" ]
-                            , option [ value "preview", onClick (UpdateStyle { style | preedit_type = Preview }) ] [ text "preview / 预览" ]
+                            [ option [ value "composition", onClick (UpdateStyle { style | preedit_type = Composition }) ] [ text "composition" ]
+                            , option [ value "preview", onClick (UpdateStyle { style | preedit_type = Preview }) ] [ text "preview" ]
                             ]
                         ]
                     ]
@@ -215,7 +215,7 @@ hero =
     section [ class "hero is-info" ]
         [ div [ class "hero-body" ]
             [ p [ class "title" ] [ text "小狼毫皮肤编辑器" ]
-            , p [ class "subtitle" ] [ text "预览仅供参考 (～￣▽￣)～" ]
+            , p [ class "subtitle" ] [ text "预览仅供参考 (～￣▽￣)～  v0.16.3 beta" ]
             ]
         ]
 

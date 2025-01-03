@@ -54,7 +54,6 @@ preEditTypeToString pre =
         Preview ->
             "preview"
 
-
 type alias Style =
     { color_scheme : String
     , font_face : String
@@ -103,7 +102,7 @@ type alias Model =
 initModel : Model
 initModel =
     { style =
-        { color_scheme = "succulent_plant"
+        { color_scheme = "Catppuccin Macchiato Mauve"
         , font_face = "Microsoft YaHei"
         , font_point = "12"
         , horizontal = True
@@ -118,7 +117,7 @@ initModel =
         , min_height = "0"
         , border_width = "3"
         , margin_x = "10"
-        , margin_y = "10"
+        , margin_y = "6"
         , spacing = "10"
         , candidate_spacing = "20"
         , hilite_spacing = "5"
@@ -126,21 +125,21 @@ initModel =
         , round_corner = "0"
         }
     , color_scheme =
-        { id = "succulent_plant"
-        , name = "多肉植物"
-        , author = "owlzou"
-        , text_color = "#7e643c"
-        , candidate_text_color = "#7e643c"
-        , comment_text_color = "#547979"
+        { id = "cappuccin_macchiato_mauve"
+        , name = "Catppuccin Macchiato Mauve"
+        , author = "_"
+        , text_color = "#8aadf4"
+        , candidate_text_color = ""
+        , comment_text_color = ""
         , label_color = ""
-        , back_color = "#e6e7e9"
-        , border_color = "#e6e7e9"
-        , hilited_text_color = "#7e643c"
-        , hilited_back_color = "#547979"
-        , hilited_comment_text_color = "#a6ca82"
+        , back_color = "#363a4f"
+        , border_color = "#363a4f"
+        , hilited_text_color = ""
+        , hilited_back_color = ""
+        , hilited_comment_text_color = "#f5bde6"
         , hilited_label_color = ""
-        , hilited_candidate_text_color = "#e6e7e9"
-        , hilited_candidate_back_color = "#547979"
+        , hilited_candidate_text_color = "#c6a0f6"
+        , hilited_candidate_back_color = ""
         }
     , yaml = ""
     , textSize =
