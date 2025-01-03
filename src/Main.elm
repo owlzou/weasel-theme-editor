@@ -128,24 +128,28 @@ colorSchemeInputView model =
     div []
         [ h4 [ class "title is-4" ] [ text "配色方案" ]
         , textInput "代码" "ID" (Just "小写英文，无空格，非数字开头。") model.id (\i -> UpdateID i)
-        , textInput "名字" "name" Nothing model.name (\i -> UpdateColorScheme { model | name = i })
+        , textInput "名称" "name" Nothing model.name (\i -> UpdateColorScheme { model | name = i })
         , textInput "作者" "author" Nothing model.author (\i -> UpdateColorScheme { model | author = i })
-        , divider "背景设定"
+        , divider "整体设定"
+        , colorInput "文字颜色" "text_color" Nothing model.text_color (\i -> UpdateColorScheme { model | text_color = i })
         , colorInput "背景颜色" "back_color" Nothing model.back_color (\i -> UpdateColorScheme { model | back_color = i })
         , colorInput "边框颜色" "border_color" (Just "无边框效果需边框和背景为同一颜色。") model.border_color (\i -> UpdateColorScheme { model | border_color = i })
+        , colorInput "阴影颜色" "shadow_color" Nothing model.shadow_color (\i -> UpdateColorScheme { model | shadow_color = i })
+        , colorInput "标签颜色" "label_color" Nothing model.label_color (\i -> UpdateColorScheme { model | label_color = i })
+        , colorInput "提示颜色" "comment_text_color" Nothing model.comment_text_color (\i -> UpdateColorScheme { model | comment_text_color = i })
         , divider "内选区域"
-        , colorInput "文字颜色" "text_color" Nothing model.text_color (\i -> UpdateColorScheme { model | text_color = i })
         , colorInput "编码颜色" "hilited_text_color" Nothing model.hilited_text_color (\i -> UpdateColorScheme { model | hilited_text_color = i })
         , colorInput "背景颜色" "hilited_back_color" Nothing model.hilited_back_color (\i -> UpdateColorScheme { model | hilited_back_color = i })
+        , colorInput "阴影颜色" "hilited_shadow_color" Nothing model.hilited_shadow_color (\i -> UpdateColorScheme { model | hilited_shadow_color = i })
         , divider "激活候选项"
         , colorInput "文字颜色" "hilited_candidate_text_color" Nothing model.hilited_candidate_text_color (\i -> UpdateColorScheme { model | hilited_candidate_text_color = i })
         , colorInput "提示颜色" "hilited_comment_text_color" Nothing model.hilited_comment_text_color (\i -> UpdateColorScheme { model | hilited_comment_text_color = i })
         , colorInput "标签颜色" "hilited_label_color" Nothing model.hilited_label_color (\i -> UpdateColorScheme { model | hilited_label_color = i })
         , colorInput "背景颜色" "hilited_candidate_back_color" Nothing model.hilited_candidate_back_color (\i -> UpdateColorScheme { model | hilited_candidate_back_color = i })
+        , colorInput "阴影颜色" "hilited_candidate_shadow_color" Nothing model.hilited_candidate_shadow_color (\i -> UpdateColorScheme { model | hilited_candidate_shadow_color = i })
         , divider "其他候选项"
         , colorInput "文字颜色" "candidate_text_color" Nothing model.candidate_text_color (\i -> UpdateColorScheme { model | candidate_text_color = i })
-        , colorInput "提示颜色" "comment_text_color" Nothing model.comment_text_color (\i -> UpdateColorScheme { model | comment_text_color = i })
-        , colorInput "标签颜色" "label_color" Nothing model.label_color (\i -> UpdateColorScheme { model | label_color = i })
+        , colorInput "阴影颜色" "candidate_shadow_color" Nothing model.candidate_shadow_color (\i -> UpdateColorScheme { model | candidate_shadow_color = i })
         ]
 
 
@@ -153,11 +157,11 @@ styleInputView : Style -> Html Msg
 styleInputView style =
     div []
         [ h4 [ class "title is-4" ] [ text "风格" ]
+        , div [ class "notification is-info is-light" ] [ text "本节只展示了部分选项" ]
         , textInputDisabled "当前配色方案" "color_scheme" style.color_scheme
         , textInput "字体" "font_face" Nothing style.font_face (\i -> UpdateStyle { style | font_face = i })
         , numberInput "字号" "font_point" (Just "大小完全不一样，预览仅供参考。") style.font_point (\i -> UpdateStyle { style | font_point = i })
         , boolInput "横排候选" "horizontal" Nothing style.horizontal (\i -> UpdateStyle { style | horizontal = i })
-        , boolInput "全屏" "fullscreen" (Just "字面意义上的全屏，无法展示。") style.fullscreen (\i -> UpdateStyle { style | fullscreen = i })
         , boolInput "嵌入式" "inline_preedit" Nothing style.inline_preedit (\i -> UpdateStyle { style | inline_preedit = i })
         , div [ class "field", class "is-horizontal" ]
             [ label [ class "label", class "field-label", title "preedit_type" ] [ text "预输入类型" ]
@@ -189,8 +193,12 @@ layoutInputView layout =
         , numberInput "输入和候选间距" "spacing" Nothing layout.spacing (\i -> UpdateLayout { layout | spacing = i })
         , numberInput "候选项间距" "candidate_spacing" Nothing layout.candidate_spacing (\i -> UpdateLayout { layout | candidate_spacing = i })
         , numberInput "高亮字间距" "hilite_spacing" Nothing layout.hilite_spacing (\i -> UpdateLayout { layout | hilite_spacing = i })
-        , numberInput "高亮背景内边距" "hilite_padding" Nothing layout.hilite_padding (\i -> UpdateLayout { layout | hilite_padding = i })
+        , numberInput "高亮横向内边距" "hilite_padding_x" Nothing layout.hilite_padding_x (\i -> UpdateLayout { layout | hilite_padding_x = i })
+        , numberInput "高亮纵向内边距" "hilite_padding_y" Nothing layout.hilite_padding_y (\i -> UpdateLayout { layout | hilite_padding_y = i })
         , numberInput "高亮背景圆角" "round_corner" Nothing layout.round_corner (\i -> UpdateLayout { layout | round_corner = i })
+        , numberInput "横向阴影" "shadow_offset_x" Nothing layout.shadow_offset_x (\i -> UpdateLayout { layout | shadow_offset_x = i })
+        , numberInput "纵向阴影" "shadow_offset_y" Nothing layout.shadow_offset_y (\i -> UpdateLayout { layout | shadow_offset_y = i })
+        , numberInput "阴影半径" "shadow_radius" Nothing layout.shadow_radius (\i -> UpdateLayout { layout | shadow_radius = i })
         ]
 
 
@@ -238,7 +246,7 @@ footerView : Html msg
 footerView =
     footer [ class "footer" ]
         [ div [ class "content has-text-centered" ]
-            [ p [] [ text "2022 ✨ OwlZou | ", a [ href "https://github.com/owlzou/weasel-theme-editor", target "_blank" ] [ text "Github" ] ]
+            [ p [] [ text "2022-2025 ✨ OwlZou | ", a [ href "https://github.com/owlzou/weasel-theme-editor", target "_blank" ] [ text "Github" ] ]
             ]
         ]
 

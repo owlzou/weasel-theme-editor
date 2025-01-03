@@ -37,6 +37,12 @@ type alias ColorScheme =
     , candidate_text_color : String
     , comment_text_color : String
     , label_color : String
+
+    --阴影
+    , shadow_color : String
+    , candidate_shadow_color : String
+    , hilited_shadow_color : String
+    , hilited_candidate_shadow_color : String
     }
 
 
@@ -54,12 +60,12 @@ preEditTypeToString pre =
         Preview ->
             "preview"
 
+
 type alias Style =
     { color_scheme : String
     , font_face : String
     , font_point : String
     , horizontal : Bool
-    , fullscreen : Bool
     , inline_preedit : Bool
     , preedit_type : PreEditType
     , display_tray_icon : Bool
@@ -76,8 +82,12 @@ type alias Layout =
     , spacing : String
     , candidate_spacing : String
     , hilite_spacing : String
-    , hilite_padding : String
+    , hilite_padding_x : String
+    , hilite_padding_y : String
     , round_corner : String
+    , shadow_offset_x : String
+    , shadow_offset_y : String
+    , shadow_radius : String
     }
 
 
@@ -102,11 +112,10 @@ type alias Model =
 initModel : Model
 initModel =
     { style =
-        { color_scheme = "Catppuccin Macchiato Mauve"
+        { color_scheme = "cappuccin_macchiato_mauve"
         , font_face = "Microsoft YaHei"
         , font_point = "12"
         , horizontal = True
-        , fullscreen = False
         , inline_preedit = True
         , preedit_type = Composition
         , display_tray_icon = False
@@ -119,15 +128,19 @@ initModel =
         , margin_x = "10"
         , margin_y = "6"
         , spacing = "10"
-        , candidate_spacing = "20"
+        , candidate_spacing = "10"
         , hilite_spacing = "5"
-        , hilite_padding = "10"
+        , hilite_padding_x = "5"
+        , hilite_padding_y = "5"
         , round_corner = "0"
+        , shadow_offset_x = "4"
+        , shadow_offset_y = "4"
+        , shadow_radius = "5"
         }
     , color_scheme =
         { id = "cappuccin_macchiato_mauve"
         , name = "Catppuccin Macchiato Mauve"
-        , author = "_"
+        , author = "-"
         , text_color = "#8aadf4"
         , candidate_text_color = ""
         , comment_text_color = ""
@@ -140,6 +153,10 @@ initModel =
         , hilited_label_color = ""
         , hilited_candidate_text_color = "#c6a0f6"
         , hilited_candidate_back_color = ""
+        , shadow_color = "#6e738d"
+        , candidate_shadow_color = ""
+        , hilited_shadow_color = ""
+        , hilited_candidate_shadow_color = ""
         }
     , yaml = ""
     , textSize =
@@ -172,7 +189,6 @@ styleEncoder style =
         , ( "font_face", Encode.string style.font_face )
         , ( "font_point", str2IntEncoder style.font_point )
         , ( "horizontal", Encode.bool style.horizontal )
-        , ( "fullscreen", Encode.bool style.fullscreen )
         , ( "inline_preedit", Encode.bool style.inline_preedit )
         , ( "preedit_type", Encode.string (preEditTypeToString style.preedit_type) )
         , ( "display_tray_icon", Encode.bool style.display_tray_icon )
@@ -191,8 +207,12 @@ layoutEncoder layout =
         , ( "spacing", str2IntEncoder layout.spacing )
         , ( "candidate_spacing", str2IntEncoder layout.candidate_spacing )
         , ( "hilite_spacing", str2IntEncoder layout.hilite_spacing )
-        , ( "hilite_padding", str2IntEncoder layout.hilite_padding )
+        , ( "hilite_padding_x", str2IntEncoder layout.hilite_padding_x )
+        , ( "hilite_padding_y", str2IntEncoder layout.hilite_padding_y )
         , ( "round_corner", str2IntEncoder layout.round_corner )
+        , ( "shadow_offset_x", str2IntEncoder layout.shadow_offset_x )
+        , ( "shadow_offset_y", str2IntEncoder layout.shadow_offset_y )
+        , ( "shadow_radius", str2IntEncoder layout.shadow_radius )
         ]
 
 
@@ -213,6 +233,10 @@ colorSchemeEncoder color =
         , ( "candidate_text_color", bgrEncoder color.candidate_text_color )
         , ( "comment_text_color", bgrEncoder color.comment_text_color )
         , ( "label_color", bgrEncoder color.label_color )
+        , ( "shadow_color", bgrEncoder color.shadow_color )
+        , ( "candidate_shadow_color", bgrEncoder color.candidate_shadow_color )
+        , ( "hilited_shadow_color", bgrEncoder color.hilited_shadow_color )
+        , ( "hilited_candidate_shadow_color", bgrEncoder color.hilited_candidate_shadow_color )
         ]
 
 

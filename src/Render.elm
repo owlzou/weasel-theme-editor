@@ -2,9 +2,10 @@ module Render exposing (canvasView)
 
 import Canvas exposing (..)
 import Canvas.Settings exposing (..)
+import Canvas.Settings.Advanced
 import Canvas.Settings.Text exposing (TextBaseLine(..), baseLine, font)
 import Color
-import ColorHelper exposing (blendColor, hex2ColorFallback, hex2ColorWithDefault)
+import ColorHelper exposing (blendColor, hex2ColorFallback, hex2ColorWithDefault, transparentColor)
 import Html exposing (Html)
 import Model exposing (Model, PreEditType(..), getLabel)
 
@@ -33,26 +34,42 @@ canvasView model =
         textFullHeight =
             model.textSize.height
 
-        marginX =
-            str2Float 0 model.layout.margin_x
-
-        marginY =
-            str2Float 0 model.layout.margin_y
-
         borderWidth =
             str2Float 0 model.layout.border_width
 
         candidateSpacing =
-            str2Float 0 model.layout.candidate_spacing
+            if model.style.horizontal then
+                max (str2Float 0 model.layout.candidate_spacing) hilitePaddingX * 2
+
+            else
+                max (str2Float 0 model.layout.candidate_spacing) hilitePaddingY * 2
 
         hiliteSpacing =
             str2Float 0 model.layout.hilite_spacing
 
-        hilitePadding =
-            str2Float 0 model.layout.hilite_padding
+        hilitePaddingX =
+            str2Float 0 model.layout.hilite_padding_x
+
+        hilitePaddingY =
+            str2Float 0 model.layout.hilite_padding_y
+
+        marginX =
+            max (str2Float 0 model.layout.margin_x) hilitePaddingX + borderWidth / 2
+
+        marginY =
+            max (str2Float 0 model.layout.margin_y) hilitePaddingY + borderWidth / 2
 
         spacing =
             str2Float 0 model.layout.spacing
+
+        shadow_offset_x =
+            str2Float 0 model.layout.shadow_offset_x
+
+        shadow_offset_y =
+            str2Float 0 model.layout.shadow_offset_y
+
+        shadow_radius =
+            str2Float 0 model.layout.shadow_radius
 
         roundCorner =
             min (str2Float 0 model.layout.round_corner) (model.textSize.height / 2)
@@ -60,6 +77,8 @@ canvasView model =
         -- 计算长度
         candidateWidth =
             model.textSize.labelWidth + textFullWidth + hiliteSpacing * 2 + model.textSize.commentWidth
+        
+        candidateHeight = textFullHeight + marginY * 2
 
         candidateFirstWidth =
             model.textSize.labelWidth + textFullWidth * 2 + model.textSize.fullCommentWidth + hiliteSpacing * 2
@@ -92,6 +111,12 @@ canvasView model =
                         textFullHeight * 6 + marginY * 2 + spacing + candidateSpacing * 4
             in
             max calcH (str2Float 0 model.layout.min_height)
+
+        fullWidth =
+            width + shadow_radius + shadow_offset_x
+
+        fullHeight =
+            height + shadow_radius + shadow_offset_y
 
         yStart =
             if model.style.inline_preedit then
@@ -137,6 +162,21 @@ canvasView model =
         hilitedCommentTextColor =
             hex2ColorFallback hilitedLabelColor model.color_scheme.comment_text_color model.color_scheme.hilited_comment_text_color
 
+        shadowColor =
+            hex2ColorWithDefault transparentColor model.color_scheme.shadow_color
+
+        candidateShadowColor =
+            hex2ColorWithDefault transparentColor model.color_scheme.candidate_shadow_color
+
+        hilitedShadowColor =
+            hex2ColorWithDefault transparentColor model.color_scheme.hilited_shadow_color
+
+        hilitedCandidateShadowColor =
+            hex2ColorWithDefault transparentColor model.color_scheme.hilited_candidate_shadow_color
+
+        defaultShadow =
+            { blur = shadow_radius, color = shadowColor, offset = ( shadow_offset_x, shadow_offset_y ) }
+
         -- 绘制输入框
         drawInput =
             if model.style.inline_preedit then
@@ -149,11 +189,11 @@ canvasView model =
                           drawText textColor ( marginX, marginY ) "小狼毫"
 
                         -- 编码背景
-                        , shapes [ fill hilitedBackColor ]
+                        , shapes [ fill hilitedBackColor, Canvas.Settings.Advanced.shadow { defaultShadow | color = hilitedShadowColor } ]
                             [ roundRect
-                                ( marginX + textFullWidth * 3 + hiliteSpacing - hilitePadding, marginY - hilitePadding )
-                                (model.textSize.fullCommentWidth + hilitePadding * 2)
-                                (textFullHeight + hilitePadding * 2)
+                                ( marginX + textFullWidth * 3 + hiliteSpacing - hilitePaddingX, marginY - hilitePaddingY )
+                                (model.textSize.fullCommentWidth + hilitePaddingX * 2)
+                                (textFullHeight + hilitePaddingY * 2)
                                 roundCorner
                             ]
                         , drawText hilitedTextColor ( marginX + textFullWidth * 3 + hiliteSpacing, marginY ) "pei se"
@@ -161,11 +201,11 @@ canvasView model =
 
                     Preview ->
                         [ -- 编码背景
-                          shapes [ fill hilitedBackColor ]
+                          shapes [ fill hilitedBackColor, Canvas.Settings.Advanced.shadow { defaultShadow | color = hilitedShadowColor } ]
                             [ roundRect
-                                ( marginX - hilitePadding, marginY - hilitePadding )
-                                (textFullWidth * 5 + hilitePadding * 2)
-                                (textFullHeight + hilitePadding * 2)
+                                ( marginX - hilitePaddingX, marginY - hilitePaddingY )
+                                (textFullWidth * 5 + hilitePaddingX * 2)
+                                (textFullHeight + hilitePaddingY * 2)
                                 roundCorner
                             ]
                         , drawText hilitedTextColor ( marginX, marginY ) "小狼毫配色"
@@ -191,15 +231,29 @@ canvasView model =
 
                 horizontalW =
                     marginX + candidateFirstWidth + candidateWidth * (toFloat idx - 2) + candidateSpacing * (toFloat idx - 1)
+
+
+                drawCandidateShadow x y =
+                    shapes
+                        [ fill candidateShadowColor
+                        , Canvas.Settings.Advanced.shadow
+                            { blur = shadow_radius
+                            , color = candidateShadowColor
+                            , offset = ( x + candidateWidth + shadow_offset_x, y + textFullHeight + marginY + shadow_offset_y )
+                            }
+                        ]
+                        [ rect ( -candidateWidth, -candidateHeight ) candidateWidth candidateHeight ]
             in
             if model.style.horizontal then
-                [ drawText labelColor ( horizontalW, horizontalH ) (getLabel idx model.style.label_format)
+                [ drawCandidateShadow horizontalW horizontalH
+                , drawText labelColor ( horizontalW, horizontalH ) (getLabel idx model.style.label_format)
                 , drawText candidateTextColor ( horizontalW + model.textSize.labelWidth + hiliteSpacing, horizontalH ) text
                 , drawText commentTextColor ( horizontalW + model.textSize.labelWidth + textFullWidth + hiliteSpacing * 2, horizontalH ) comment
                 ]
 
             else
-                [ drawText labelColor ( marginX, h ) (getLabel idx model.style.label_format)
+                [ drawCandidateShadow marginX h
+                , drawText labelColor ( marginX, h ) (getLabel idx model.style.label_format)
                 , drawText candidateTextColor ( marginX + model.textSize.labelWidth + hiliteSpacing, h ) text
                 , drawText commentTextColor ( marginX + model.textSize.labelWidth + textFullWidth + hiliteSpacing * 2, h ) comment
                 ]
@@ -217,22 +271,25 @@ canvasView model =
                 point
                 text
     in
-    Canvas.toHtml ( round width, round height )
+    Canvas.toHtml ( round fullWidth, round fullHeight )
         []
         (List.concat
-            [ [ -- 边框
-                shapes [ fill borderColor ] [ rect ( 0, 0 ) width height ]
+            [ [ --清理
+                clear ( 0, 0 ) fullWidth fullHeight
+
+              -- 边框
+              , shapes [ fill borderColor, Canvas.Settings.Advanced.shadow defaultShadow ] [ rect ( 0, 0 ) width height ]
 
               -- 背景
               , shapes [ fill backColor ] [ rect ( min borderWidth (width / 2), min borderWidth (height / 2) ) (width - borderWidth * 2) (height - borderWidth * 2) ]
               ]
             , drawInput
             , [ -- 第一个候选高亮背景
-                shapes [ fill hilitedCandidateBackColor ]
+                shapes [ fill hilitedCandidateBackColor, Canvas.Settings.Advanced.shadow { defaultShadow | color = hilitedCandidateShadowColor } ]
                     [ roundRect
-                        ( marginX - hilitePadding, yStart - hilitePadding )
-                        (candidateFirstWidth + hilitePadding * 2)
-                        (textFullHeight + hilitePadding * 2)
+                        ( marginX - hilitePaddingX, yStart - hilitePaddingY )
+                        (candidateFirstWidth + hilitePaddingX * 2)
+                        (textFullHeight + hilitePaddingY * 2)
                         roundCorner
                     ]
 

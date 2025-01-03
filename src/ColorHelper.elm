@@ -1,4 +1,4 @@
-module ColorHelper exposing (blendColor, hex2BGR, hex2ColorFallback, hex2ColorWithDefault)
+module ColorHelper exposing (blendColor, hex2BGR, hex2ColorFallback, hex2ColorWithDefault, transparentColor)
 
 import Color
 import Parser exposing (..)
@@ -91,3 +91,8 @@ blendColor colorA colorB =
             Color.toRgba colorB
     in
     Color.rgb ((a.red * 2 + b.red) / 3) ((a.green * 2 + b.green) / 3) ((a.blue * 2 + b.blue) / 3)
+
+
+transparentColor : Color.Color
+transparentColor =
+    Color.rgba 0.0 0.0 0.0 0.0
