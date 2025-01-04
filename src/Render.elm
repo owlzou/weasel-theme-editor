@@ -77,8 +77,9 @@ canvasView model =
         -- 计算长度
         candidateWidth =
             model.textSize.labelWidth + textFullWidth + hiliteSpacing * 2 + model.textSize.commentWidth
-        
-        candidateHeight = textFullHeight + marginY * 2
+
+        candidateHeight =
+            textFullHeight + marginY * 2
 
         candidateFirstWidth =
             model.textSize.labelWidth + textFullWidth * 2 + model.textSize.fullCommentWidth + hiliteSpacing * 2
@@ -113,17 +114,23 @@ canvasView model =
             max calcH (str2Float 0 model.layout.min_height)
 
         fullWidth =
-            width + shadow_radius + shadow_offset_x
+            width + shadow_radius * 4 + abs shadow_offset_x
 
         fullHeight =
-            height + shadow_radius + shadow_offset_y
+            height + shadow_radius * 4 + abs shadow_offset_y
 
-        yStart =
+        yCandidateStart =
             if model.style.inline_preedit then
                 marginY
 
             else
                 marginY + textFullHeight + spacing
+
+        xStart =
+            max 0 (-shadow_offset_x + shadow_radius * 2)
+
+        yStart =
+            max 0 (-shadow_offset_y + shadow_radius * 2)
 
         -- 颜色Fallback
         textColor =
@@ -224,14 +231,13 @@ canvasView model =
 
                 horizontalH =
                     if model.style.inline_preedit then
-                        marginY
+                        marginY + yStart
 
                     else
-                        marginY + textFullHeight + spacing
+                        marginY + textFullHeight + spacing + yStart
 
                 horizontalW =
-                    marginX + candidateFirstWidth + candidateWidth * (toFloat idx - 2) + candidateSpacing * (toFloat idx - 1)
-
+                    marginX + candidateFirstWidth + candidateWidth * (toFloat idx - 2) + candidateSpacing * (toFloat idx - 1) + xStart
 
                 drawCandidateShadow x y =
                     shapes
@@ -278,25 +284,25 @@ canvasView model =
                 clear ( 0, 0 ) fullWidth fullHeight
 
               -- 边框
-              , shapes [ fill borderColor, Canvas.Settings.Advanced.shadow defaultShadow ] [ rect ( 0, 0 ) width height ]
+              , shapes [ fill borderColor, Canvas.Settings.Advanced.shadow defaultShadow ] [ rect ( xStart, yStart ) width height ]
 
               -- 背景
-              , shapes [ fill backColor ] [ rect ( min borderWidth (width / 2), min borderWidth (height / 2) ) (width - borderWidth * 2) (height - borderWidth * 2) ]
+              , shapes [ fill backColor ] [ rect ( min borderWidth (width / 2) + xStart, min borderWidth (height / 2) + yStart ) (width - borderWidth * 2) (height - borderWidth * 2) ]
               ]
             , drawInput
             , [ -- 第一个候选高亮背景
                 shapes [ fill hilitedCandidateBackColor, Canvas.Settings.Advanced.shadow { defaultShadow | color = hilitedCandidateShadowColor } ]
                     [ roundRect
-                        ( marginX - hilitePaddingX, yStart - hilitePaddingY )
+                        ( xStart + marginX - hilitePaddingX, yStart + yCandidateStart - hilitePaddingY )
                         (candidateFirstWidth + hilitePaddingX * 2)
                         (textFullHeight + hilitePaddingY * 2)
                         roundCorner
                     ]
 
               -- 第一个候选词
-              , drawText hilitedLabelColor ( marginX, yStart ) (getLabel 1 model.style.label_format)
-              , drawText hilitedCandidateTextColor ( marginX + model.textSize.labelWidth + hiliteSpacing, yStart ) "配色"
-              , drawText hilitedCommentTextColor ( marginX + model.textSize.labelWidth + textFullWidth * 2 + hiliteSpacing * 2, yStart ) "pei se"
+              , drawText hilitedLabelColor ( xStart + marginX, yStart + yCandidateStart ) (getLabel 1 model.style.label_format)
+              , drawText hilitedCandidateTextColor ( xStart + marginX + model.textSize.labelWidth + hiliteSpacing, yStart + yCandidateStart ) "配色"
+              , drawText hilitedCommentTextColor ( xStart + marginX + model.textSize.labelWidth + textFullWidth * 2 + hiliteSpacing * 2, yStart + yCandidateStart ) "pei se"
               ]
             , drawCandidate 2 "陪" "pei"
             , drawCandidate 3 "配" "pei"
