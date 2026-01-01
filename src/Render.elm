@@ -193,29 +193,29 @@ canvasView model =
                 case model.style.preedit_type of
                     Composition ->
                         [ -- 文字
-                          drawText textColor ( marginX, marginY ) "小狼毫"
+                          drawText textColor ( marginX + xStart, marginY + yStart ) "小狼毫"
 
                         -- 编码背景
                         , shapes [ fill hilitedBackColor, Canvas.Settings.Advanced.shadow { defaultShadow | color = hilitedShadowColor } ]
                             [ roundRect
-                                ( marginX + textFullWidth * 3 + hiliteSpacing - hilitePaddingX, marginY - hilitePaddingY )
+                                ( marginX + textFullWidth * 3 + hiliteSpacing - hilitePaddingX + xStart, marginY - hilitePaddingY + yStart )
                                 (model.textSize.fullCommentWidth + hilitePaddingX * 2)
                                 (textFullHeight + hilitePaddingY * 2)
                                 roundCorner
                             ]
-                        , drawText hilitedTextColor ( marginX + textFullWidth * 3 + hiliteSpacing, marginY ) "pei se"
+                        , drawText hilitedTextColor ( marginX + textFullWidth * 3 + hiliteSpacing + xStart, marginY + yStart ) "pei se"
                         ]
 
                     Preview ->
                         [ -- 编码背景
                           shapes [ fill hilitedBackColor, Canvas.Settings.Advanced.shadow { defaultShadow | color = hilitedShadowColor } ]
                             [ roundRect
-                                ( marginX - hilitePaddingX, marginY - hilitePaddingY )
+                                ( marginX - hilitePaddingX + xStart, marginY - hilitePaddingY + yStart )
                                 (textFullWidth * 5 + hilitePaddingX * 2)
                                 (textFullHeight + hilitePaddingY * 2)
                                 roundCorner
                             ]
-                        , drawText hilitedTextColor ( marginX, marginY ) "小狼毫配色"
+                        , drawText hilitedTextColor ( marginX + xStart, marginY + yStart ) "小狼毫配色"
                         ]
 
         -- 绘制候选项（非第一个）
@@ -224,10 +224,10 @@ canvasView model =
             let
                 h =
                     if model.style.inline_preedit then
-                        marginY + textFullHeight * (toFloat idx - 1) + candidateSpacing * (toFloat idx - 1)
+                        marginY + textFullHeight * (toFloat idx - 1) + candidateSpacing * (toFloat idx - 1) + yStart
 
                     else
-                        marginY + textFullHeight * toFloat idx + spacing + candidateSpacing * (toFloat idx - 1)
+                        marginY + textFullHeight * toFloat idx + spacing + candidateSpacing * (toFloat idx - 1) + yStart
 
                 horizontalH =
                     if model.style.inline_preedit then
@@ -258,10 +258,10 @@ canvasView model =
                 ]
 
             else
-                [ drawCandidateShadow marginX h
-                , drawText labelColor ( marginX, h ) (getLabel idx model.style.label_format)
-                , drawText candidateTextColor ( marginX + model.textSize.labelWidth + hiliteSpacing, h ) text
-                , drawText commentTextColor ( marginX + model.textSize.labelWidth + textFullWidth + hiliteSpacing * 2, h ) comment
+                [ drawCandidateShadow (marginX + xStart) h
+                , drawText labelColor ( marginX + xStart, h ) (getLabel idx model.style.label_format)
+                , drawText candidateTextColor ( marginX + xStart + model.textSize.labelWidth + hiliteSpacing, h ) text
+                , drawText commentTextColor ( marginX + xStart + model.textSize.labelWidth + textFullWidth + hiliteSpacing * 2, h ) comment
                 ]
 
         -- 绘制文字

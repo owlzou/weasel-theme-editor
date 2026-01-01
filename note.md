@@ -21,30 +21,30 @@
 ## 预定增加参数
 
 - [X] `preset_color_schemes/color_scheme/shadow_color: color`
-- [] `preset_color_schemes/color_scheme/nextpage_color: color`
-- [] `preset_color_schemes/color_scheme/prevpage_color: color`
-- [] `preset_color_schemes/color_scheme/candidate_back_color: color`
+- [ ] `preset_color_schemes/color_scheme/nextpage_color: color`
+- [ ] `preset_color_schemes/color_scheme/prevpage_color: color`
+- [ ] `preset_color_schemes/color_scheme/candidate_back_color: color`
 - [X] `preset_color_schemes/color_scheme/candidate_shadow_color: color`
-- [] `preset_color_schemes/color_scheme/candidate_border_color: color`
+- [ ] `preset_color_schemes/color_scheme/candidate_border_color: color`
 - [X] `preset_color_schemes/color_scheme/hilited_shadow_color: color`
 - [X] `preset_color_schemes/color_scheme/hilited_candidate_shadow_color: color`
-- [] `preset_color_schemes/color_scheme/hilited_candidate_border_color: color`
-- [] `preset_color_schemes/color_scheme/hilited_mark_color: color`
+- [ ] `preset_color_schemes/color_scheme/hilited_candidate_border_color: color`
+- [ ] `preset_color_schemes/color_scheme/hilited_mark_color: color`
 
 （下面的可能不会添加了）
 
 - [X] `style/layout/hilite_padding_x`, `style/layout/hilite_padding_y`
-- [] `style/text_orientation: "horizontal" | "vertical"`
-- [] `style/layout/baseline: int`, `style/layout/linespacing: int`
+- [ ] `style/text_orientation: "horizontal" | "vertical"`
+- [ ] `style/layout/baseline: int`, `style/layout/linespacing: int`
 - [X] `style/layout/shadow_radius: int`
 - [X] `style/layout/shadow_offset_x: int`,`style/layout/shadow_offset_y: int`
-- [] `style/label_font_face: string`
-- [] `style/comment_font_face: string`
-- [] `style/label_font_point: int`
-- [] `style/comment_font_point: int`
-- [] `style/layout/align_type: "top" | "center" | "bottom"`
-- [] `style/vertical_text: bool`
-- [] `style/vertical_text_left_to_right: bool`
-- [] `style/vertical_text_with_wrap: bool`
-- [] `style/preedit_type: "composition" | "preview" | "preview_all"`
-- [] `style/mark_text: string`
+- [ ] `style/label_font_face: string`
+- [ ] `style/comment_font_face: string`
+- [ ] `style/label_font_point: int`
+- [ ] `style/comment_font_point: int`
+- [ ] `style/layout/align_type: "top" | "center" | "bottom"`
+- [ ] `style/vertical_text: bool`
+- [ ] `style/vertical_text_left_to_right: bool`
+- [ ] `style/vertical_text_with_wrap: bool`
+- [ ] `style/preedit_type: "composition" | "preview" | "preview_all"`
+- [ ] `style/mark_text: string`

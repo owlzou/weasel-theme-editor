@@ -18,31 +18,29 @@ type alias ColorScheme =
     , name : String
     , author : String
 
-    -- 背景设定
+    -- 整体设定
+    , text_color : String
     , back_color : String
     , border_color : String
+    , label_color : String
+    , comment_text_color : String
+    , shadow_color : String
 
     -- 内选区域
-    , text_color : String
     , hilited_text_color : String
     , hilited_back_color : String
+    , hilited_shadow_color : String
 
     -- 激活候选项
-    , hilited_comment_text_color : String
     , hilited_candidate_text_color : String
-    , hilited_candidate_back_color : String
+    , hilited_comment_text_color : String
     , hilited_label_color : String
+    , hilited_candidate_back_color : String
+    , hilited_candidate_shadow_color : String
 
     -- 其他候选项
     , candidate_text_color : String
-    , comment_text_color : String
-    , label_color : String
-
-    --阴影
-    , shadow_color : String
     , candidate_shadow_color : String
-    , hilited_shadow_color : String
-    , hilited_candidate_shadow_color : String
     }
 
 
